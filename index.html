@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.7.9/angular.min.js"></script>
+  </head>
+  <body ng-app="app" ng-controller="cc">
+    <p>
+      <label for="">search</label>
+      <input type="text" ng-model="search" name="" id="" />
+      select
+      <select
+        ng-model="ndata"
+        ng-options="item.name for item in list"
+        class="form-control"
+      ></select>
+      order by <lable>Select The Order of Data: </lable>
+      <select ng-model="order" class="form-control">
+        <option value="Ascending">Ascending</option>
+        <option value="Descending">Descending</option>
+      </select>
+    </p>
+    <form>
+      <input type="text" ng-model="data.name" name="" id="" />
+      <input type="text" ng-model="data.price" id="" />
+      <input type="text" ng-model="data.qty" id="" />
+      <input type="submit" value="submit" ng-click="sub()" id="" />
+    </form>
+    <form ng-show="editMode">
+      <input type="text" ng-model="editData.name" name="" id="" />
+      <input type="text" ng-model="editData.price" id="" />
+      <input type="text" ng-model="editData.qty" id="" />
+      <input type="submit" value="Update" ng-click="update()" id="" />
+    </form>
+    <table>
+      <tr>
+        <th>name</th>
+        <th>price</th>
+        <th>quality</th>
+        <td>delete</td>
+        <th>edit</th>
+      </tr>
+      <tr
+        ng-repeat="i in list | filter:search | filter:ndata | orderBy: order==='Ascending'?'price':'-price'"
+      >
+        <td>{{i.name}}</td>
+        <td>{{i.price}}</td>
+        <td>{{i.qty}}</td>
+        <td>
+          <input type="button" ng-click="del(i)" value="delete" name="" id="" />
+        </td>
+        <td>
+          <input type="button" ng-click="edit(i)" value="edit" name="" id="" />
+        </td>
+      </tr>
+    </table>
+    <script>
+      const app = angular.module("app", []);
+      app.controller("cc", ($scope, $http) => {
+        $scope.list = [];
+        $scope.data = {};
+        $scope.editMode = false; // Add this variable to track editing state
+        $scope.editData = {}; // Add this object to store the data being edited
+        $scope.order = "Ascending";
+        $scope.edit = (item) => {
+          $scope.editData = angular.copy(item); // Copy the selected item for editing
+          $scope.editMode = true; // Show the edit form
+        };
+
+        $scope.update = () => {
+          $http
+            .put(`/dd/${$scope.editData._id}`, $scope.editData)
+            .then((res) => {
+              $scope.list = res.data;
+              $scope.editMode = false; // Hide the edit form
+              $scope.getdata();
+            });
+        };
+
+        $scope.sub = () => {
+          $http.post("/data", $scope.data).then((res) => {
+            console.log(res.data);
+            $scope.getdata();
+          });
+        };
+
+        $scope.getdata = () => {
+          $http.get("/dd").then((res) => {
+            $scope.list = res.data;
+          });
+        };
+
+        $scope.del = (item) => {
+          $http.delete(`/data/${item._id}`).then((res) => {
+            $scope.list = res.data;
+            $scope.getdata();
+          });
+        };
+
+        $scope.getdata();
+      });
+    </script>
+  </body>
+</html>
